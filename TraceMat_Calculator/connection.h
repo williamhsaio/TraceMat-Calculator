@@ -32,18 +32,29 @@ static bool createConnection()
                "name text not null, "
                "path text not null, "
                "rarity int not null)");
-    query.exec("create table char_mats (characterID int,"
+    // query.exec("create table character_mats (characterID integer primary key, "
+    //            "name text not null, "
+    //            "path text not null, "
+    //            "rarity int not null)");
+    query.exec("create table character_mats (characterID integer primary key, "
+               "name text not null, "
+               "purples int not null, "
+               "blues int not null, "
+               "greens int not null)");/*, "
+               "foreign key (name) references character_data(name))");*/
+    query.exec("create table wep_mats (characterID integer primary key, "
+               "name text not null, "
                "purples int not null, "
                "blues int not null, "
                "greens int not null, "
-               "foreign key (characterID) references character_data(characterID))");
-    query.exec("create table wep_mats (wepID int, "
+               "foreign key (name) references wep_data(name))");
+    /*query.exec("create table wep_mats (wepID integer primary key, "
+               "name text not null, "
                "purples int not null, "
                "blues int not null, "
                "greens int not null, "
-               "foreign key (wepID) references weapon_data(wepID))");
-
-    qDebug() << "exec :" << query.lastError();
+               "foreign key (name) references weapon_data(name))");*/
+    //qDebug() << "exec :" << query.lastError();
     return true;
 }
 

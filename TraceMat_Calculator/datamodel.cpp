@@ -6,8 +6,8 @@
 #include <QSqlError>
 
 DataModel::DataModel(QObject *parent) {
-    loadCharData();
-    loadWepData();
+    //loadCharData();
+    //loadWepData();
 }
 
 DataModel::~DataModel(){
@@ -197,25 +197,35 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
     if(charExists(name)){
         return DBErrors::KEY_EXISTS;
     }
+    {
     QSqlQuery query;
     query.prepare("insert into character_data(name, path, rarity) "
                   "values(:name, :path, :rarity)");
     query.bindValue(":name", QString::fromStdString(name));
     query.bindValue(":path", QString::fromStdString(path));
     query.bindValue(":rarity", rarity);
-    int charID = query.value("characterID").toInt();
+
     if(!query.exec()){
         qDebug()<<"Query failed to execute: "<<query.lastError();
         return DBErrors::DB_WRITE_FAIL;
     }
-    query.prepare("insert into char_mats(characterID, purples, blues, greens) "
-                  "values(:characterID, :purples, :blues, :greens)");
-    query.bindValue(":characterID", charID);
-    query.bindValue(":purples", purples);
-    query.bindValue(":blues", blues);
-    query.bindValue(":greens", greens);
-    if(!query.exec()){
-        qDebug()<<"Query failed to execute: "<<query.lastError();
+
+    }
+
+    QSqlQuery query2;
+    query2.prepare("insert into character_mats(name, purples, blues, greens) "
+                  "values(:name, :purples, :blues, :greens)");
+
+    // query2.prepare("insert into character_mats(characterID, name, purples, blues, greens) "
+    //               "values(:characterID, :name, :purples, :blues, :greens)");
+    // query2.bindValue(":characterID", 1);
+    query2.bindValue(":name", QString::fromStdString(name));
+    query2.bindValue(":purples", purples);
+    query2.bindValue(":blues", blues);
+    query2.bindValue(":greens", greens);
+
+    if(!query2.exec()){
+        qDebug()<<"Mats Query failed to execute: "<<query2.lastError();
         return DBErrors::DB_WRITE_FAIL;
     }
     return DBErrors::SUCCESS;
@@ -224,8 +234,8 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
 DataModel::DBErrors DataModel::loadCharData(){
     QSqlQuery query;
     if(!query.exec("select * from character_data "
-                    "join char_mats "
-                    "on character_data.characterID = char_mats.characterID")){
+                    "join character_mats "
+                    "on character_data.name = character_mats.name")){
         qDebug()<<"Select failed: "<< query.lastError();
         return DBErrors::SELECT_FAIL;
     }
@@ -248,7 +258,7 @@ DataModel::DBErrors DataModel::loadWepData(){
     QSqlQuery query;
     if(!query.exec("select * from weapon_data "
                     "join wep_mats "
-                    "on weapon_data.wepID = wep_mats.wepID")){
+                    "on weapon_data.name = wep_mats.name")){
         qDebug()<<"Select failed: "<< query.lastError();
         return DBErrors::SELECT_FAIL;
     }
