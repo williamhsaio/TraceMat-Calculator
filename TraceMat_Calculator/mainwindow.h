@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include "datamodel.h"
+#include "characterpage.h"
+#include "weaponpage.h"
 
 #include <QMainWindow>
 #include <QHBoxLayout>
@@ -10,6 +12,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QTabWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,53 +27,57 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    QVBoxLayout* createDataLayout();
-    QVBoxLayout* createAddLayout();
-    QVBoxLayout* createUpdateLayout();
-    QVBoxLayout* createViewLayout();
+    // QVBoxLayout* createDataLayout();
+    // QVBoxLayout* createAddLayout();
+    // QVBoxLayout* createUpdateLayout();
+    // QVBoxLayout* createViewLayout();
 
 private slots:
-    void handleAddCharClicked();
-    void handleAddWepClicked();
-    void handleUpdateCharClicked();
-    void handleUpdateWepClicked();
-    void handleCharBoxEdited();
-    void handleWepBoxEdited();
+    // void handleAddCharClicked();
+    // void handleAddWepClicked();
+    // void handleUpdateCharClicked();
+    // void handleUpdateWepClicked();
+    // void handleCharBoxEdited();
+    // void handleWepBoxEdited();
 
 private:
     Ui::MainWindow *ui;
-    DataModel *model = nullptr;
+    QTabWidget *tabWidget;
+    CharacterPage *charTab;
+    WeaponPage *wepTab;
 
-    QLabel *nameChar;
-    QLabel *purplesChar;
-    QLabel *bluesChar;
-    QLabel *greensChar;
-    QLabel *nameWep;
-    QLabel *purplesWep;
-    QLabel *bluesWep;
-    QLabel *greensWep;
+    // DataModel *model = nullptr;
 
-    QLineEdit *nameCharEdit;
-    QLineEdit *rarityCharEdit;
-    QLineEdit *pathCharEdit;
-    QLineEdit *nameWepEdit;
-    QLineEdit *rarityWepEdit;
-    QLineEdit *pathWepEdit;
-    QLineEdit *charPurpleEdit;
-    QLineEdit *charBlueEdit;
-    QLineEdit *charGreenEdit;
-    QLineEdit *wepPurpleEdit;
-    QLineEdit *wepBlueEdit;
-    QLineEdit *wepGreenEdit;
+    // QLabel *nameChar;
+    // QLabel *purplesChar;
+    // QLabel *bluesChar;
+    // QLabel *greensChar;
+    // QLabel *nameWep;
+    // QLabel *purplesWep;
+    // QLabel *bluesWep;
+    // QLabel *greensWep;
 
-    QPushButton *addCharButton;
-    QPushButton *addWepButton;
-    QPushButton *updateCharButton;
-    QPushButton *updateWepButton;
+    // QLineEdit *nameCharEdit;
+    // QLineEdit *rarityCharEdit;
+    // QLineEdit *pathCharEdit;
+    // QLineEdit *nameWepEdit;
+    // QLineEdit *rarityWepEdit;
+    // QLineEdit *pathWepEdit;
+    // QLineEdit *charPurpleEdit;
+    // QLineEdit *charBlueEdit;
+    // QLineEdit *charGreenEdit;
+    // QLineEdit *wepPurpleEdit;
+    // QLineEdit *wepBlueEdit;
+    // QLineEdit *wepGreenEdit;
 
-    QComboBox *updateCharBox;
-    QComboBox *updateWepBox;
-    QComboBox *viewCharBox;
-    QComboBox *viewWepBox;
+    // QPushButton *addCharButton;
+    // QPushButton *addWepButton;
+    // QPushButton *updateCharButton;
+    // QPushButton *updateWepButton;
+
+    // QComboBox *updateCharBox;
+    // QComboBox *updateWepBox;
+    // QComboBox *viewCharBox;
+    // QComboBox *viewWepBox;
 };
 #endif // MAINWINDOW_H

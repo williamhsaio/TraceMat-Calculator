@@ -28,6 +28,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         weapon.h weapon.cpp
         datamodel.h datamodel.cpp
         connection.h
+        characterpage.h characterpage.cpp
+        weaponpage.h weaponpage.cpp
 
 
 
