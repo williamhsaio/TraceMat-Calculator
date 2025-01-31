@@ -6,8 +6,8 @@
 #include <QSqlError>
 
 DataModel::DataModel(QObject *parent) {
-    //loadCharData();
-    //loadWepData();
+    loadCharData();
+    loadWepData();
 }
 
 DataModel::~DataModel(){
@@ -34,14 +34,14 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
         });
         if(it != charList.end()){
             cout<<"Character already exists!"<<endl;
+            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
             Character *c = new Character(name, rarity, path);
             charList.push_back(c);
 
-            vector<int> mats = c->getMaterials();
-            saveCharData(name, path, rarity, mats[0], mats[1], mats[2]);
+            saveCharData(name, path, rarity, c->getMaterials());
             return Errors::SUCCESS;
         }
 
@@ -75,10 +75,12 @@ DataModel::Errors DataModel::updateCharMats(const string &name, int purples, int
         }
 
         (*it)->setMaterials(mats[0]-purples, mats[1]-blues, mats[2]-greens);
+        updateCharData(name, (*it)->getMaterials());
         return Errors::SUCCESS;
     }
     else{
         cout<<"Character does not exist."<<endl;
+        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -94,13 +96,16 @@ DataModel::Errors DataModel::addWeapon(const string &name, const string &path, i
         });
         if(it != wepList.end()){
             cout<<"Weapon already exists!"<<endl;
+            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
             Weapon *c = new Weapon(name, rarity, path);
             wepList.push_back(c);
+
+            saveWepData(name, path, rarity, c->getMaterials());
+            return Errors::SUCCESS;
         }
-        return Errors::SUCCESS;
     }
     else{
         cout<<"Weapon rarity must be between 3 and 5 inclusive."<<endl;
@@ -132,10 +137,12 @@ DataModel::Errors DataModel::updateWepMats(const string &name, int purples, int 
         }
 
         (*it)->setMaterials(mats[0]-purples, mats[1]-blues, mats[2]-greens);
+        updateWepData(name, (*it)->getMaterials());
         return Errors::SUCCESS;
     }
     else{
         cout<<"Weapon does not exist."<<endl;
+        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -147,6 +154,7 @@ Character* DataModel::getChar(const string &name) const{
     if(it != charList.end()){
         return *it;
     }
+    delete(*it);
     return nullptr;
 }
 Weapon* DataModel::getWep(const string &name) const{
@@ -156,6 +164,7 @@ Weapon* DataModel::getWep(const string &name) const{
     if(it != wepList.end()){
         return *it;
     }
+    delete(*it);
     return nullptr;
 }
 
@@ -193,11 +202,10 @@ if(!query.exec()){
     return DBErrors::DB_WRITE_FAIL;
 }
 }*/
-DataModel::DBErrors DataModel::saveCharData(const string &name, const string &path, int rarity, int purples, int blues, int greens){
+DataModel::DBErrors DataModel::saveCharData(const string &name, const string &path, int rarity, const vector<int> &materials){
     if(charExists(name)){
         return DBErrors::KEY_EXISTS;
     }
-    {
     QSqlQuery query;
     query.prepare("insert into character_data(name, path, rarity) "
                   "values(:name, :path, :rarity)");
@@ -210,22 +218,47 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
         return DBErrors::DB_WRITE_FAIL;
     }
 
-    }
-
     QSqlQuery query2;
     query2.prepare("insert into character_mats(name, purples, blues, greens) "
                   "values(:name, :purples, :blues, :greens)");
-
-    // query2.prepare("insert into character_mats(characterID, name, purples, blues, greens) "
-    //               "values(:characterID, :name, :purples, :blues, :greens)");
-    // query2.bindValue(":characterID", 1);
     query2.bindValue(":name", QString::fromStdString(name));
-    query2.bindValue(":purples", purples);
-    query2.bindValue(":blues", blues);
-    query2.bindValue(":greens", greens);
+    query2.bindValue(":purples", materials[0]);
+    query2.bindValue(":blues", materials[1]);
+    query2.bindValue(":greens", materials[2]);
 
     if(!query2.exec()){
         qDebug()<<"Mats Query failed to execute: "<<query2.lastError();
+        return DBErrors::DB_WRITE_FAIL;
+    }
+    return DBErrors::SUCCESS;
+}
+
+DataModel::DBErrors DataModel::saveWepData(const string &name, const string &path, int rarity, const vector<int> &materials){
+    if(wepExists(name)){
+        return DBErrors::KEY_EXISTS;
+    }
+    QSqlQuery query;
+    query.prepare("insert into weapon_data(name, path, rarity) "
+                  "values(:name, :path, :rarity)");
+    query.bindValue(":name", QString::fromStdString(name));
+    query.bindValue(":path", QString::fromStdString(path));
+    query.bindValue(":rarity", rarity);
+
+    if(!query.exec()){
+        qDebug()<<"Insertion into weapon_data failed: "<<query.lastError();
+        return DBErrors::DB_WRITE_FAIL;
+    }
+
+    QSqlQuery query2;
+    query2.prepare("insert into wep_mats(name, purples, blues, greens) "
+                   "values(:name, :purples, :blues, :greens)");
+    query2.bindValue(":name", QString::fromStdString(name));
+    query2.bindValue(":purples", materials[0]);
+    query2.bindValue(":blues", materials[1]);
+    query2.bindValue(":greens", materials[2]);
+
+    if(!query2.exec()){
+        qDebug()<<"Insertion into wep_mats failed: "<<query2.lastError();
         return DBErrors::DB_WRITE_FAIL;
     }
     return DBErrors::SUCCESS;
@@ -273,6 +306,50 @@ DataModel::DBErrors DataModel::loadWepData(){
         for(auto w: getWepList()){
             w->setMaterials(purples, blues, greens);
         }
+    }
+    return DBErrors::SUCCESS;
+}
+
+DataModel::DBErrors DataModel::updateCharData(const string &name, const vector<int> &materials){
+    QSqlQuery query;
+    if(!query.prepare("update character_mats "
+                  "set purples=:purples, "
+                  "blues=:blues, "
+                  "greens=:greens "
+                  "where name=:name")){
+        qDebug()<<"Prep failed: "<<query.lastError();
+        return DBErrors::DB_WRITE_FAIL;
+    }
+    query.bindValue(":purples", materials[0]);
+    query.bindValue(":blues", materials[1]);
+    query.bindValue(":greens", materials[2]);
+    query.bindValue(":name", QString::fromStdString(name));
+
+    if(!query.exec()){
+        qDebug()<<"Failed to update character_mats: "<<query.lastError();
+        return DBErrors::DB_WRITE_FAIL;
+    }
+    return DBErrors::SUCCESS;
+}
+
+DataModel::DBErrors DataModel::updateWepData(const string &name, const vector<int> &materials){
+    QSqlQuery query;
+    if(!query.prepare("update wep_mats "
+                       "set purples=:purples, "
+                       "blues=:blues, "
+                       "greens=:greens "
+                       "where name=:name")){
+        qDebug()<<"Prep failed: "<<query.lastError();
+        return DBErrors::DB_WRITE_FAIL;
+    }
+    query.bindValue(":purples", materials[0]);
+    query.bindValue(":blues", materials[1]);
+    query.bindValue(":greens", materials[2]);
+    query.bindValue(":name", QString::fromStdString(name));
+
+    if(!query.exec()){
+        qDebug()<<"Failed to update wep_mats: "<<query.lastError();
+        return DBErrors::DB_WRITE_FAIL;
     }
     return DBErrors::SUCCESS;
 }

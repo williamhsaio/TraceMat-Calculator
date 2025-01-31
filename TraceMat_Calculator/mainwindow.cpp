@@ -5,7 +5,6 @@
 #include <QFormLayout>
 #include <QCoreApplication>
 #include <QWidget>
-#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,23 +18,29 @@ MainWindow::MainWindow(QWidget *parent)
     h_layout->addLayout(createDataLayout());
 
     QVBoxLayout *button_layout = new QVBoxLayout;
+    QHBoxLayout *add_update_layout = new QHBoxLayout();
 
     QVBoxLayout *add_form = createAddLayout();
-    button_layout->addLayout(add_form);
+    add_update_layout->addLayout(add_form);
 
     QVBoxLayout *update_form = createUpdateLayout();
-    button_layout->addLayout(update_form);
+    add_update_layout->addLayout(update_form);
+
+    button_layout->addLayout(add_update_layout);
+
+    QVBoxLayout *view_form = createViewLayout();
+    button_layout->addLayout(view_form);
 
     h_layout->addLayout(button_layout);
 
-    //widget->setLayout(h_layout);
-    //setCentralWidget(widget);
     ui->centralwidget->setLayout(h_layout);
 
     connect(addCharButton, &QPushButton::clicked, this, &MainWindow::handleAddCharClicked);
     connect(addWepButton, &QPushButton::clicked, this, &MainWindow::handleAddWepClicked);
     connect(updateCharButton, &QPushButton::clicked, this, &MainWindow::handleUpdateCharClicked);
     connect(updateWepButton, &QPushButton::clicked, this, &MainWindow::handleUpdateWepClicked);
+    connect(viewCharBox, &QComboBox::currentIndexChanged, this, &MainWindow::handleCharBoxEdited);
+    connect(viewWepBox, &QComboBox::currentIndexChanged, this, &MainWindow::handleWepBoxEdited);
 }
 
 MainWindow::~MainWindow()
@@ -50,6 +55,7 @@ void MainWindow::handleAddCharClicked(){
 
     if(model->addCharacter(name, path, rarity) == DataModel::Errors::SUCCESS){
         updateCharBox->addItem(QString::fromStdString(name));
+        viewCharBox->addItem(QString::fromStdString(name));
     }
 }
 
@@ -60,6 +66,7 @@ void MainWindow::handleAddWepClicked(){
 
     if(model->addWeapon(name, path, rarity) == DataModel::Errors::SUCCESS){
         updateWepBox->addItem(QString::fromStdString(name));
+        viewWepBox->addItem(QString::fromStdString(name));
     }
 }
 
@@ -95,13 +102,32 @@ void MainWindow::handleUpdateWepClicked(){
     }
 }
 
+void MainWindow::handleCharBoxEdited(){
+    const auto name = viewCharBox->currentText().toStdString();
+    Character *c = model->getChar(name);
+    vector<int> mats = c->getMaterials();
+    nameChar->setText(QString::fromStdString(name));
+    purplesChar->setText(QString::number(mats[0]));
+    bluesChar->setText(QString::number(mats[1]));
+    greensChar->setText(QString::number(mats[2]));
+}
+void MainWindow::handleWepBoxEdited(){
+    const auto name = viewWepBox->currentText().toStdString();
+    Weapon *w = model->getWep(name);
+    vector<int> mats = w->getMaterials();
+    nameWep->setText(QString::fromStdString(name));
+    purplesWep->setText(QString::number(mats[0]));
+    bluesWep->setText(QString::number(mats[1]));
+    greensWep->setText(QString::number(mats[2]));
+}
+
 QVBoxLayout* MainWindow::createDataLayout(){
     model = new DataModel(this);
     QVBoxLayout *data_form_layout = new QVBoxLayout;
     data_form_layout->addWidget(new QLabel("Character Materials", this));
     QFormLayout *formCharLayout = new QFormLayout;
 
-    nameChar = new QLabel("0",this);
+    nameChar = new QLabel(this);
     purplesChar = new QLabel(this);
     bluesChar = new QLabel(this);
     greensChar = new QLabel(this);
@@ -116,7 +142,7 @@ QVBoxLayout* MainWindow::createDataLayout(){
     data_form_layout->addWidget(new QLabel("Weapon Materials", this));
     QFormLayout *formWepLayout = new QFormLayout;
 
-    nameWep = new QLabel("0",this);
+    nameWep = new QLabel(this);
     purplesWep = new QLabel(this);
     bluesWep = new QLabel(this);
     greensWep = new QLabel(this);
@@ -225,4 +251,38 @@ QVBoxLayout* MainWindow::createUpdateLayout(){
     update_form_layout->addWidget(updateWepButton);
 
     return update_form_layout;
+}
+
+QVBoxLayout* MainWindow::createViewLayout(){
+    //View Character
+    QVBoxLayout *view_form_layout = new QVBoxLayout;
+    view_form_layout->addWidget(new QLabel("View Character", this));
+
+    viewCharBox = new QComboBox(this);
+    viewCharBox->setEditable(true);
+    vector<Character*> c_list = model->getCharList();
+    for(auto c: c_list){
+        viewCharBox->addItem(QString::fromStdString(c->getName()));
+    }
+
+    viewCharBox->setCurrentIndex(-1);
+    viewCharBox->setPlaceholderText("");
+
+    view_form_layout->addWidget(viewCharBox);
+
+    //View Weapon
+    view_form_layout->addWidget(new QLabel("View Weapon", this));
+
+    viewWepBox = new QComboBox(this);
+    viewWepBox->setEditable(true);
+    vector<Weapon*> w_list = model->getWepList();
+    for(auto w: w_list){
+        viewWepBox->addItem(QString::fromStdString(w->getName()));
+    }
+
+    viewWepBox->setCurrentIndex(-1);
+    viewWepBox->setPlaceholderText("");
+
+    view_form_layout->addWidget(viewWepBox);
+    return view_form_layout;
 }

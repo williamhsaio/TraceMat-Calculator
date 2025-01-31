@@ -36,10 +36,10 @@ public:
 
     DBErrors loadCharData();
     DBErrors loadWepData();
-    DBErrors saveCharData(const string &name, const string &path, int rarity, int purples, int blues, int greens);
-    DBErrors saveWepData(const string &name, const string &path, int rarity, int purples, int blues, int greens);
-    DBErrors updateCharData(const string &name, int purples, int blues, int greens);
-    DBErrors updateWepData(const string &name, int purples, int blues, int greens);
+    DBErrors saveCharData(const string &name, const string &path, int rarity, const vector<int> &materials);
+    DBErrors saveWepData(const string &name, const string &path, int rarity, const vector<int> &materials);
+    DBErrors updateCharData(const string &name, const vector<int> &materials);
+    DBErrors updateWepData(const string &name, const vector<int> &materials);
 
     bool charExists(const string &name);
     bool wepExists(const string &name);

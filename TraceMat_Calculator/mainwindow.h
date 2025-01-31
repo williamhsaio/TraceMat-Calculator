@@ -27,12 +27,15 @@ public:
     QVBoxLayout* createDataLayout();
     QVBoxLayout* createAddLayout();
     QVBoxLayout* createUpdateLayout();
+    QVBoxLayout* createViewLayout();
 
 private slots:
     void handleAddCharClicked();
     void handleAddWepClicked();
     void handleUpdateCharClicked();
     void handleUpdateWepClicked();
+    void handleCharBoxEdited();
+    void handleWepBoxEdited();
 
 private:
     Ui::MainWindow *ui;
@@ -67,5 +70,7 @@ private:
 
     QComboBox *updateCharBox;
     QComboBox *updateWepBox;
+    QComboBox *viewCharBox;
+    QComboBox *viewWepBox;
 };
 #endif // MAINWINDOW_H

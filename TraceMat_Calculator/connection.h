@@ -25,35 +25,25 @@ static bool createConnection()
     QSqlQuery query;
     query.exec("Pragma foreign_keys = ON");
     query.exec("create table character_data (characterID integer primary key, "
-               "name text not null, "
+               "name text unique not null, "
                "path text not null, "
                "rarity int not null)");
     query.exec("create table weapon_data (wepID integer primary key, "
-               "name text not null, "
+               "name text unique not null, "
                "path text not null, "
                "rarity int not null)");
-    // query.exec("create table character_mats (characterID integer primary key, "
-    //            "name text not null, "
-    //            "path text not null, "
-    //            "rarity int not null)");
     query.exec("create table character_mats (characterID integer primary key, "
-               "name text not null, "
+               "name text unique not null, "
                "purples int not null, "
                "blues int not null, "
-               "greens int not null)");/*, "
-               "foreign key (name) references character_data(name))");*/
+               "greens int not null, "
+               "foreign key (name) references character_data(name))");
     query.exec("create table wep_mats (characterID integer primary key, "
-               "name text not null, "
+               "name text unique not null, "
                "purples int not null, "
                "blues int not null, "
                "greens int not null, "
-               "foreign key (name) references wep_data(name))");
-    /*query.exec("create table wep_mats (wepID integer primary key, "
-               "name text not null, "
-               "purples int not null, "
-               "blues int not null, "
-               "greens int not null, "
-               "foreign key (name) references weapon_data(name))");*/
+               "foreign key (name) references weapon_data(name))");
     //qDebug() << "exec :" << query.lastError();
     return true;
 }
