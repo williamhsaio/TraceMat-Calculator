@@ -8,6 +8,8 @@ class QLineEdit;
 class QPushButton;
 class QComboBox;
 class QVBoxLayout;
+class QCheckBox;
+class QSlider;
 class DataModel;
 
 class CharacterPage: public QWidget
@@ -24,6 +26,11 @@ private slots:
     void handleAddCharClicked();
     void handleUpdateCharClicked();
     void handleCharBoxEdited();
+    void handleBasicSlider();
+    // void handleSkillSlider();
+    // void handleTalentSlider();
+    // void handleUltSlider();
+    // void handleTraceChecked();
 
 private:
     DataModel *model;
@@ -32,6 +39,10 @@ private:
     QLabel *purplesChar;
     QLabel *bluesChar;
     QLabel *greensChar;
+    QLabel *currentBasic;
+    QLabel *currentSkill;
+    QLabel *currentTalent;
+    QLabel *currentUlt;
 
     QLineEdit *nameCharEdit;
     QLineEdit *rarityCharEdit;
@@ -45,6 +56,13 @@ private:
 
     QComboBox *updateCharBox;
     QComboBox *viewCharBox;
+
+    QCheckBox *traceCheck;
+
+    QSlider *basicSlider;
+    QSlider *skillSlider;
+    QSlider *talentSlider;
+    QSlider *ultSlider;
 };
 
 #endif // CHARACTERPAGE_H

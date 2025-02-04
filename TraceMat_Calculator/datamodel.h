@@ -9,6 +9,12 @@
 
 using namespace std;
 
+struct matsPerLevel{
+    int purples;
+    int blues;
+    int greens;
+};
+
 class DataModel: public QObject
 {
     Q_OBJECT
@@ -28,6 +34,10 @@ public:
 
     explicit DataModel(QObject *parent = nullptr);
     ~DataModel();
+
+    void initializeCharMap(int rarity);
+    vector<int> findCharMats(int currLevel, int finLevel);
+    vector<int> findCharBasic(int currLevel, int finLevel);
 
     Errors addCharacter(const string &name, const string &path, int rarity);
     Errors updateCharMats(const string &name, int purples, int blues, int greens);

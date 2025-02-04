@@ -8,6 +8,11 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSlider>
+#include <QCheckBox>
+#include <iostream>
+
+using namespace std;
 
 CharacterPage::CharacterPage(QObject *parent) {
     QHBoxLayout *h_layout = new QHBoxLayout;
@@ -33,16 +38,42 @@ CharacterPage::CharacterPage(QObject *parent) {
     connect(addCharButton, &QPushButton::clicked, this, &CharacterPage::handleAddCharClicked);
     connect(updateCharButton, &QPushButton::clicked, this, &CharacterPage::handleUpdateCharClicked);
     connect(viewCharBox, &QComboBox::currentIndexChanged, this, &CharacterPage::handleCharBoxEdited);
+    connect(basicSlider, &QSlider::valueChanged, this, &CharacterPage::handleBasicSlider);
 }
 
 void CharacterPage::handleAddCharClicked(){
     const auto name = nameCharEdit->text().toStdString();
     const auto path = pathCharEdit->text().toStdString();
     const auto rarity = rarityCharEdit->text().toInt();
+    const auto minBasic = basicSlider->minimum();
+    const auto currBasic = basicSlider->value();
+    const auto minSkill = basicSlider->minimum();
+    const auto currSkill = basicSlider->value();
+    const auto minTalent = basicSlider->minimum();
+    const auto currTalent = basicSlider->value();
+    const auto minUlt = basicSlider->minimum();
+    const auto currUlt = basicSlider->value();
 
     if(model->addCharacter(name, path, rarity) == DataModel::Errors::SUCCESS){
         updateCharBox->addItem(QString::fromStdString(name));
         viewCharBox->addItem(QString::fromStdString(name));
+
+        vector<int> basicMats = model->findCharBasic(minBasic, currBasic);
+        cout<<"Basic Mats"<<endl;
+        for(auto i: basicMats){
+            cout<<i<<endl;
+        }
+        vector<int> skillMats = model->findCharMats(minSkill, currSkill);
+        vector<int> talentMats = model->findCharMats(minTalent, currTalent);
+        vector<int> ultMats = model->findCharMats(minUlt, currUlt);
+
+        vector<int> total;
+        total.push_back(basicMats[0] + skillMats[0] + talentMats[0] + ultMats[0]);
+        total.push_back(basicMats[1] + skillMats[1] + talentMats[1] + ultMats[1]);
+        total.push_back(basicMats[2] + skillMats[2] + talentMats[2] + ultMats[2]);
+
+        Character *c = model->getChar(name);
+        c->setMaterials(total[0], total[1], total[2]);
     }
 }
 
@@ -70,6 +101,10 @@ void CharacterPage::handleCharBoxEdited(){
     purplesChar->setText(QString::number(mats[0]));
     bluesChar->setText(QString::number(mats[1]));
     greensChar->setText(QString::number(mats[2]));
+}
+
+void CharacterPage::handleBasicSlider(){
+    currentBasic->setText(QString::number(basicSlider->value()));
 }
 
 QVBoxLayout* CharacterPage::createDataLayout(){
@@ -103,9 +138,82 @@ QVBoxLayout* CharacterPage::createAddLayout(){
     rarityCharEdit = new QLineEdit(this);
     pathCharEdit = new QLineEdit(this);
 
+    basicSlider = new QSlider(this);
+    skillSlider = new QSlider(this);
+    talentSlider = new QSlider(this);
+    ultSlider = new QSlider(this);
+
+    basicSlider->setRange(1,6);
+    basicSlider->setOrientation(Qt::Horizontal);
+
+    skillSlider->setRange(1,10);
+    skillSlider->setOrientation(Qt::Horizontal);
+
+    talentSlider->setRange(1,10);
+    talentSlider->setOrientation(Qt::Horizontal);
+
+    ultSlider->setRange(1,10);
+    ultSlider->setOrientation(Qt::Horizontal);
+
+    traceCheck = new QCheckBox(this);
+
     formCharLayout->addRow("Name: ", nameCharEdit);
     formCharLayout->addRow("Rarity: ", rarityCharEdit);
     formCharLayout->addRow("Path: ", pathCharEdit);
+
+    //Basic Level Slider
+    formCharLayout->addRow("Basic: ", basicSlider);
+    QHBoxLayout *basicLvls = new QHBoxLayout;
+    basicLvls->addWidget(new QLabel("Min: 1"));
+
+    QFormLayout *basicCurrForm = new QFormLayout;
+    currentBasic = new QLabel("1", this);
+    basicCurrForm->addRow("Current:", currentBasic);
+    basicLvls->addLayout(basicCurrForm);
+
+    basicLvls->addWidget(new QLabel(" Max: 6"));
+    formCharLayout->addRow("Level: ", basicLvls);
+
+    //Skill Level Slider
+    formCharLayout->addRow("Skill: ", skillSlider);
+    QHBoxLayout *skillLvls = new QHBoxLayout;
+    skillLvls->addWidget(new QLabel("Min: 1"));
+
+    QFormLayout *skillCurrForm = new QFormLayout;
+    currentSkill = new QLabel("1", this);
+    skillCurrForm->addRow("Current:", currentSkill);
+    skillLvls->addLayout(skillCurrForm);
+
+    skillLvls->addWidget(new QLabel(" Max: 10"));
+    formCharLayout->addRow("Level: ", skillLvls);
+
+    //Talent Level Slider
+    formCharLayout->addRow("Talent: ", talentSlider);
+    QHBoxLayout *talentLvls = new QHBoxLayout;
+    talentLvls->addWidget(new QLabel("Min: 1"));
+
+    QFormLayout *talentCurrForm = new QFormLayout;
+    currentTalent = new QLabel("1", this);
+    talentCurrForm->addRow("Current:", currentTalent);
+    talentLvls->addLayout(talentCurrForm);
+
+    talentLvls->addWidget(new QLabel(" Max: 10"));
+    formCharLayout->addRow("Level: ", talentLvls);
+
+    //Ult Level Slider
+    formCharLayout->addRow("Ultimate: ", ultSlider);
+    QHBoxLayout *ultLvls = new QHBoxLayout;
+    ultLvls->addWidget(new QLabel("Min: 1"));
+
+    QFormLayout *ultCurrForm = new QFormLayout;
+    currentUlt = new QLabel("1", this);
+    ultCurrForm->addRow("Current:", currentUlt);
+    ultLvls->addLayout(ultCurrForm);
+
+    ultLvls->addWidget(new QLabel(" Max: 10"));
+    formCharLayout->addRow("Level: ", ultLvls);
+
+    formCharLayout->addRow("Max traces?", traceCheck);
 
     add_form_layout->addLayout(formCharLayout);
     addCharButton = new QPushButton("Add", this);

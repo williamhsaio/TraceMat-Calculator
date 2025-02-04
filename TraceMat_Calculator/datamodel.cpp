@@ -4,6 +4,10 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QSqlError>
+#include <unordered_map>
+
+static unordered_map<int, matsPerLevel> otherCharMats;
+static unordered_map<int, matsPerLevel> basicCharMats;
 
 DataModel::DataModel(QObject *parent) {
     loadCharData();
@@ -21,6 +25,84 @@ DataModel::~DataModel(){
         delete(w);
         wepList.pop_back();
     }
+}
+
+void DataModel::initializeCharMap(int rarity){
+    if(rarity == 5){
+        otherCharMats[1] = {0,0,0};
+        otherCharMats[2] = {0,0,3};
+        otherCharMats[3] = {0,3,0};
+        otherCharMats[4] = {0,5,0};
+        otherCharMats[5] = {0,7,0};
+        otherCharMats[6] = {3,0,0};
+        otherCharMats[7] = {5,0,0};
+        otherCharMats[8] = {8,0,0};
+        otherCharMats[9] = {14,0,0};
+
+        basicCharMats[1] = {0,0,3};
+        basicCharMats[2] = {0,3,0};
+        basicCharMats[3] = {0,5,0};
+        basicCharMats[4] = {3,0,0};
+        basicCharMats[5] = {8,0,0};
+    }
+    else{
+        otherCharMats[1] = {0,0,0};
+        otherCharMats[2] = {0,0,2};
+        otherCharMats[3] = {0,2,0};
+        otherCharMats[4] = {0,4,0};
+        otherCharMats[5] = {0,6,0};
+        otherCharMats[6] = {2,0,0};
+        otherCharMats[7] = {4,0,0};
+        otherCharMats[8] = {6,0,0};
+        otherCharMats[9] = {11,0,0};
+
+        basicCharMats[1] = {0,0,2};
+        basicCharMats[2] = {0,2,0};
+        basicCharMats[3] = {0,4,0};
+        basicCharMats[4] = {2,0,0};
+        basicCharMats[5] = {6,0,0};
+    }
+}
+
+vector<int> DataModel::findCharMats(int currLevel, int finLevel){
+    vector<int> totMats;
+    int purples = 0;
+    int blues = 0;
+    int greens = 0;
+
+    for(int i = currLevel; i < finLevel; i++){
+        matsPerLevel mats = otherCharMats[i];
+        purples += mats.purples;
+        blues += mats.blues;
+        greens += mats.greens;
+    }
+    totMats.push_back(purples);
+    totMats.push_back(blues);
+    totMats.push_back(greens);
+
+    return totMats;
+}
+vector<int> DataModel::findCharBasic(int currLevel, int finLevel){
+    vector<int> totMats;
+    int purples = 0;
+    int blues = 0;
+    int greens = 0;
+
+    for(int i = currLevel; i < finLevel; i++){
+        cout<<"Current Level: "<<i<<endl;
+        matsPerLevel mats = basicCharMats[i];
+        cout<<"Struct purples: "<<mats.purples<<endl;
+        purples += mats.purples;
+        blues += mats.blues;
+        cout<<"Struct blues: "<<mats.blues<<endl;
+        greens += mats.greens;
+        cout<<"Struct greens: "<<mats.greens<<endl;
+    }
+    totMats.push_back(purples);
+    totMats.push_back(blues);
+    totMats.push_back(greens);
+
+    return totMats;
 }
 
 DataModel::Errors DataModel::addCharacter(const string &name, const string &path, int rarity){
@@ -44,7 +126,6 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
             saveCharData(name, path, rarity, c->getMaterials());
             return Errors::SUCCESS;
         }
-
     }
     else{
         cout<<"Character rarity must be 4 or 5."<<endl;
@@ -220,7 +301,7 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
 
     QSqlQuery query2;
     query2.prepare("insert into character_mats(name, purples, blues, greens) "
-                  "values(:name, :purples, :blues, :greens)");
+                   "values(:name, :purples, :blues, :greens)");
     query2.bindValue(":name", QString::fromStdString(name));
     query2.bindValue(":purples", materials[0]);
     query2.bindValue(":blues", materials[1]);
@@ -313,10 +394,10 @@ DataModel::DBErrors DataModel::loadWepData(){
 DataModel::DBErrors DataModel::updateCharData(const string &name, const vector<int> &materials){
     QSqlQuery query;
     if(!query.prepare("update character_mats "
-                  "set purples=:purples, "
-                  "blues=:blues, "
-                  "greens=:greens "
-                  "where name=:name")){
+                       "set purples=:purples, "
+                       "blues=:blues, "
+                       "greens=:greens "
+                       "where name=:name")){
         qDebug()<<"Prep failed: "<<query.lastError();
         return DBErrors::DB_WRITE_FAIL;
     }
