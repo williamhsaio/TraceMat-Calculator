@@ -29,6 +29,10 @@ WeaponPage::WeaponPage(QObject *parent) {
 
     h_layout->addLayout(button_layout);
     setLayout(h_layout);
+
+    connect(addWepButton, &QPushButton::clicked, this, &WeaponPage::handleAddWepClicked);
+    connect(updateWepButton, &QPushButton::clicked, this, &WeaponPage::handleUpdateWepClicked);
+    connect(viewWepBox, &QComboBox::currentIndexChanged, this, &WeaponPage::handleWepBoxEdited);
 }
 
 void WeaponPage::handleAddWepClicked(){

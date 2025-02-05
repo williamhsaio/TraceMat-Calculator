@@ -27,10 +27,10 @@ private slots:
     void handleUpdateCharClicked();
     void handleCharBoxEdited();
     void handleBasicSlider();
-    // void handleSkillSlider();
-    // void handleTalentSlider();
-    // void handleUltSlider();
-    // void handleTraceChecked();
+    void handleSkillSlider();
+    void handleTalentSlider();
+    void handleUltSlider();
+    void handleTraceChecked();
 
 private:
     DataModel *model;

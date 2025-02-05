@@ -39,6 +39,10 @@ CharacterPage::CharacterPage(QObject *parent) {
     connect(updateCharButton, &QPushButton::clicked, this, &CharacterPage::handleUpdateCharClicked);
     connect(viewCharBox, &QComboBox::currentIndexChanged, this, &CharacterPage::handleCharBoxEdited);
     connect(basicSlider, &QSlider::valueChanged, this, &CharacterPage::handleBasicSlider);
+    connect(skillSlider, &QSlider::valueChanged, this, &CharacterPage::handleSkillSlider);
+    connect(talentSlider, &QSlider::valueChanged, this, &CharacterPage::handleTalentSlider);
+    connect(ultSlider, &QSlider::valueChanged, this, &CharacterPage::handleUltSlider);
+    //connect(traceCheck, &QCheckBox::checkStateChanged, this, &CharacterPage::handleTraceChecked);
 }
 
 void CharacterPage::handleAddCharClicked(){
@@ -47,17 +51,19 @@ void CharacterPage::handleAddCharClicked(){
     const auto rarity = rarityCharEdit->text().toInt();
     const auto minBasic = basicSlider->minimum();
     const auto currBasic = basicSlider->value();
-    const auto minSkill = basicSlider->minimum();
-    const auto currSkill = basicSlider->value();
-    const auto minTalent = basicSlider->minimum();
-    const auto currTalent = basicSlider->value();
-    const auto minUlt = basicSlider->minimum();
-    const auto currUlt = basicSlider->value();
+    const auto minSkill = skillSlider->minimum();
+    const auto currSkill = skillSlider->value();
+    const auto minTalent = talentSlider->minimum();
+    const auto currTalent = talentSlider->value();
+    const auto minUlt = ultSlider->minimum();
+    const auto currUlt = ultSlider->value();
 
     if(model->addCharacter(name, path, rarity) == DataModel::Errors::SUCCESS){
         updateCharBox->addItem(QString::fromStdString(name));
         viewCharBox->addItem(QString::fromStdString(name));
 
+        cout<<"Create vector of basic mats"<<endl;
+        model->initializeCharMap(rarity);
         vector<int> basicMats = model->findCharBasic(minBasic, currBasic);
         cout<<"Basic Mats"<<endl;
         for(auto i: basicMats){
@@ -73,7 +79,18 @@ void CharacterPage::handleAddCharClicked(){
         total.push_back(basicMats[2] + skillMats[2] + talentMats[2] + ultMats[2]);
 
         Character *c = model->getChar(name);
-        c->setMaterials(total[0], total[1], total[2]);
+        if(traceCheck->isChecked()){
+            if(rarity == 5){
+                c->setMaterials(total[0]+38, total[1]+16, total[2]+6);
+            }
+            else{
+                c->setMaterials(total[0]+28, total[1]+12, total[2]+4);
+            }
+        }
+        else{
+            c->setMaterials(total[0], total[1], total[2]);
+        }
+        cout<<"total purples: " <<total[0]<<endl;
     }
 }
 
@@ -82,10 +99,12 @@ void CharacterPage::handleUpdateCharClicked(){
     const auto purples = charPurpleEdit->text().toInt();
     const auto blues = charBlueEdit->text().toInt();
     const auto greens = charGreenEdit->text().toInt();
-
+    qDebug()<<"purple edit: "<<purples;
     if(model->updateCharMats(name, purples, blues, greens) == DataModel::Errors::SUCCESS){
         Character *c = model->getChar(name);
         vector<int> mats = c->getMaterials();
+        qDebug()<<"Name: "<<c->getName();
+        qDebug()<<"Mats: "<<mats[0]<<mats[1]<<mats[2];
         nameChar->setText(QString::fromStdString(name));
         purplesChar->setText(QString::number(mats[0]));
         bluesChar->setText(QString::number(mats[1]));
@@ -98,13 +117,52 @@ void CharacterPage::handleCharBoxEdited(){
     Character *c = model->getChar(name);
     vector<int> mats = c->getMaterials();
     nameChar->setText(QString::fromStdString(name));
+    cout<<"Purples: " <<mats[0]<<endl;
     purplesChar->setText(QString::number(mats[0]));
+    cout<<"Blues: " <<mats[1]<<endl;
     bluesChar->setText(QString::number(mats[1]));
+    cout<<"Greens: " <<mats[2]<<endl;
     greensChar->setText(QString::number(mats[2]));
 }
 
 void CharacterPage::handleBasicSlider(){
     currentBasic->setText(QString::number(basicSlider->value()));
+}
+
+void CharacterPage::handleSkillSlider(){
+    currentSkill->setText(QString::number(skillSlider->value()));
+}
+
+void CharacterPage::handleTalentSlider(){
+    currentTalent->setText(QString::number(talentSlider->value()));
+}
+
+void CharacterPage::handleUltSlider(){
+    currentUlt->setText(QString::number(ultSlider->value()));
+}
+
+void CharacterPage::handleTraceChecked(){
+    const auto name = nameCharEdit->text().toStdString();
+    const auto rarity = rarityCharEdit->text().toInt();
+    Character *c = model->getChar(name);
+    vector<int> mats = c->getMaterials();
+
+    if(traceCheck->isChecked()){
+        if(rarity == 5){
+            c->setMaterials(mats[0]+38, mats[1]+16, mats[2]+6);
+        }
+        else{
+            c->setMaterials(mats[0]+37, mats[1]+22, mats[2]+6);
+        }
+    }
+    else{
+        if(rarity == 5){
+            c->setMaterials(mats[0]-38, mats[1]-16, mats[2]-6);
+        }
+        else{
+            c->setMaterials(mats[0]-37, mats[1]-22, mats[2]-6);
+        }
+    }
 }
 
 QVBoxLayout* CharacterPage::createDataLayout(){

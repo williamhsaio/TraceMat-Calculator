@@ -8,6 +8,7 @@
 
 static const char *db_file_path = "/Users/billhsaio/Personal_Work/starrailmats.db";
 
+
 static bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -46,6 +47,10 @@ static bool createConnection()
                "foreign key (name) references weapon_data(name))");
     //qDebug() << "exec :" << query.lastError();
     return true;
+}
+
+static void closeConnection(){
+    QSqlDatabase::database("QSQLITE").close();
 }
 
 #endif // CONNECTION_H

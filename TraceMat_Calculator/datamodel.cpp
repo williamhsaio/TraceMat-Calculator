@@ -17,13 +17,13 @@ DataModel::DataModel(QObject *parent) {
 DataModel::~DataModel(){
     while(!charList.empty()){
         Character *c = charList.back();
-        delete(c);
         charList.pop_back();
+        delete(c);
     }
     while(!wepList.empty()){
         Weapon *w = wepList.back();
-        delete(w);
         wepList.pop_back();
+        delete(w);
     }
 }
 
@@ -89,14 +89,10 @@ vector<int> DataModel::findCharBasic(int currLevel, int finLevel){
     int greens = 0;
 
     for(int i = currLevel; i < finLevel; i++){
-        cout<<"Current Level: "<<i<<endl;
         matsPerLevel mats = basicCharMats[i];
-        cout<<"Struct purples: "<<mats.purples<<endl;
         purples += mats.purples;
         blues += mats.blues;
-        cout<<"Struct blues: "<<mats.blues<<endl;
         greens += mats.greens;
-        cout<<"Struct greens: "<<mats.greens<<endl;
     }
     totMats.push_back(purples);
     totMats.push_back(blues);
@@ -116,7 +112,6 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
         });
         if(it != charList.end()){
             cout<<"Character already exists!"<<endl;
-            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
@@ -161,7 +156,6 @@ DataModel::Errors DataModel::updateCharMats(const string &name, int purples, int
     }
     else{
         cout<<"Character does not exist."<<endl;
-        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -177,7 +171,6 @@ DataModel::Errors DataModel::addWeapon(const string &name, const string &path, i
         });
         if(it != wepList.end()){
             cout<<"Weapon already exists!"<<endl;
-            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
@@ -192,7 +185,6 @@ DataModel::Errors DataModel::addWeapon(const string &name, const string &path, i
         cout<<"Weapon rarity must be between 3 and 5 inclusive."<<endl;
         return Errors::FAIL_TO_ADD;
     }
-
 }
 
 DataModel::Errors DataModel::updateWepMats(const string &name, int purples, int blues, int greens){
@@ -223,7 +215,6 @@ DataModel::Errors DataModel::updateWepMats(const string &name, int purples, int 
     }
     else{
         cout<<"Weapon does not exist."<<endl;
-        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -360,6 +351,8 @@ DataModel::DBErrors DataModel::loadCharData(){
         int purples = query.value("purples").toInt();
         int blues = query.value("blues").toInt();
         int greens = query.value("greens").toInt();
+        qDebug()<<"Name: "<<name<<" path: "<<path<<" rarity: "<<rarity<<" purples: "<<purples<<
+            " blues: "<<blues<<" greens: "<<greens;
         addCharacter(name, path, rarity);
         for(auto c: getCharList()){
             c->setMaterials(purples, blues, greens);
