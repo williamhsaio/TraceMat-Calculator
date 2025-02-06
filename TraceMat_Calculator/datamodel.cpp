@@ -354,7 +354,8 @@ DataModel::DBErrors DataModel::loadCharData(){
         qDebug()<<"Name: "<<name<<" path: "<<path<<" rarity: "<<rarity<<" purples: "<<purples<<
             " blues: "<<blues<<" greens: "<<greens;
         addCharacter(name, path, rarity);
-        for(auto c: getCharList()){
+        auto *c = getChar(name);
+        if(c != nullptr){
             c->setMaterials(purples, blues, greens);
         }
     }
@@ -377,7 +378,8 @@ DataModel::DBErrors DataModel::loadWepData(){
         int blues = query.value("blues").toInt();
         int greens = query.value("greens").toInt();
         addWeapon(name, path, rarity);
-        for(auto w: getWepList()){
+        auto *w = getWep(name);
+        if(w != nullptr){
             w->setMaterials(purples, blues, greens);
         }
     }
