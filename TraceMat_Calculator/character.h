@@ -23,9 +23,6 @@ public:
     vector<int> getMaterials() const{
         return m_materials;
     }
-    bool getMaxBasic() const{
-        return m_maxBasic;
-    }
 
     void setName(string name){
         m_name = name;
@@ -47,7 +44,6 @@ private:
     string m_path;
     int m_rarity;
     vector<int> m_materials;
-    bool m_maxBasic;
 };
 
 #endif // CHARACTER_H

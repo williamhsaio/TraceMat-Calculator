@@ -4,6 +4,10 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QSqlError>
+#include <unordered_map>
+
+static unordered_map<int, matsPerLevel> otherCharMats;
+static unordered_map<int, matsPerLevel> basicCharMats;
 
 DataModel::DataModel(QObject *parent) {
     loadCharData();
@@ -13,14 +17,88 @@ DataModel::DataModel(QObject *parent) {
 DataModel::~DataModel(){
     while(!charList.empty()){
         Character *c = charList.back();
-        delete(c);
         charList.pop_back();
+        delete(c);
     }
     while(!wepList.empty()){
         Weapon *w = wepList.back();
-        delete(w);
         wepList.pop_back();
+        delete(w);
     }
+}
+
+void DataModel::initializeCharMap(int rarity){
+    if(rarity == 5){
+        otherCharMats[1] = {0,0,0};
+        otherCharMats[2] = {0,0,3};
+        otherCharMats[3] = {0,3,0};
+        otherCharMats[4] = {0,5,0};
+        otherCharMats[5] = {0,7,0};
+        otherCharMats[6] = {3,0,0};
+        otherCharMats[7] = {5,0,0};
+        otherCharMats[8] = {8,0,0};
+        otherCharMats[9] = {14,0,0};
+
+        basicCharMats[1] = {0,0,3};
+        basicCharMats[2] = {0,3,0};
+        basicCharMats[3] = {0,5,0};
+        basicCharMats[4] = {3,0,0};
+        basicCharMats[5] = {8,0,0};
+    }
+    else{
+        otherCharMats[1] = {0,0,0};
+        otherCharMats[2] = {0,0,2};
+        otherCharMats[3] = {0,2,0};
+        otherCharMats[4] = {0,4,0};
+        otherCharMats[5] = {0,6,0};
+        otherCharMats[6] = {2,0,0};
+        otherCharMats[7] = {4,0,0};
+        otherCharMats[8] = {6,0,0};
+        otherCharMats[9] = {11,0,0};
+
+        basicCharMats[1] = {0,0,2};
+        basicCharMats[2] = {0,2,0};
+        basicCharMats[3] = {0,4,0};
+        basicCharMats[4] = {2,0,0};
+        basicCharMats[5] = {6,0,0};
+    }
+}
+
+vector<int> DataModel::findCharMats(int currLevel, int finLevel){
+    vector<int> totMats;
+    int purples = 0;
+    int blues = 0;
+    int greens = 0;
+
+    for(int i = currLevel; i < finLevel; i++){
+        matsPerLevel mats = otherCharMats[i];
+        purples += mats.purples;
+        blues += mats.blues;
+        greens += mats.greens;
+    }
+    totMats.push_back(purples);
+    totMats.push_back(blues);
+    totMats.push_back(greens);
+
+    return totMats;
+}
+vector<int> DataModel::findCharBasic(int currLevel, int finLevel){
+    vector<int> totMats;
+    int purples = 0;
+    int blues = 0;
+    int greens = 0;
+
+    for(int i = currLevel; i < finLevel; i++){
+        matsPerLevel mats = basicCharMats[i];
+        purples += mats.purples;
+        blues += mats.blues;
+        greens += mats.greens;
+    }
+    totMats.push_back(purples);
+    totMats.push_back(blues);
+    totMats.push_back(greens);
+
+    return totMats;
 }
 
 DataModel::Errors DataModel::addCharacter(const string &name, const string &path, int rarity){
@@ -34,7 +112,6 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
         });
         if(it != charList.end()){
             cout<<"Character already exists!"<<endl;
-            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
@@ -44,7 +121,6 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
             saveCharData(name, path, rarity, c->getMaterials());
             return Errors::SUCCESS;
         }
-
     }
     else{
         cout<<"Character rarity must be 4 or 5."<<endl;
@@ -80,7 +156,6 @@ DataModel::Errors DataModel::updateCharMats(const string &name, int purples, int
     }
     else{
         cout<<"Character does not exist."<<endl;
-        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -96,7 +171,6 @@ DataModel::Errors DataModel::addWeapon(const string &name, const string &path, i
         });
         if(it != wepList.end()){
             cout<<"Weapon already exists!"<<endl;
-            delete(*it);
             return Errors::FAIL_TO_ADD;
         }
         else{
@@ -111,7 +185,6 @@ DataModel::Errors DataModel::addWeapon(const string &name, const string &path, i
         cout<<"Weapon rarity must be between 3 and 5 inclusive."<<endl;
         return Errors::FAIL_TO_ADD;
     }
-
 }
 
 DataModel::Errors DataModel::updateWepMats(const string &name, int purples, int blues, int greens){
@@ -142,7 +215,6 @@ DataModel::Errors DataModel::updateWepMats(const string &name, int purples, int 
     }
     else{
         cout<<"Weapon does not exist."<<endl;
-        delete(*it);
         return Errors::FAIL_TO_UPDATE;
     }
 }
@@ -220,7 +292,7 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
 
     QSqlQuery query2;
     query2.prepare("insert into character_mats(name, purples, blues, greens) "
-                  "values(:name, :purples, :blues, :greens)");
+                   "values(:name, :purples, :blues, :greens)");
     query2.bindValue(":name", QString::fromStdString(name));
     query2.bindValue(":purples", materials[0]);
     query2.bindValue(":blues", materials[1]);
@@ -279,8 +351,11 @@ DataModel::DBErrors DataModel::loadCharData(){
         int purples = query.value("purples").toInt();
         int blues = query.value("blues").toInt();
         int greens = query.value("greens").toInt();
+        qDebug()<<"Name: "<<name<<" path: "<<path<<" rarity: "<<rarity<<" purples: "<<purples<<
+            " blues: "<<blues<<" greens: "<<greens;
         addCharacter(name, path, rarity);
-        for(auto c: getCharList()){
+        auto *c = getChar(name);
+        if(c != nullptr){
             c->setMaterials(purples, blues, greens);
         }
     }
@@ -303,7 +378,8 @@ DataModel::DBErrors DataModel::loadWepData(){
         int blues = query.value("blues").toInt();
         int greens = query.value("greens").toInt();
         addWeapon(name, path, rarity);
-        for(auto w: getWepList()){
+        auto *w = getWep(name);
+        if(w != nullptr){
             w->setMaterials(purples, blues, greens);
         }
     }
@@ -313,10 +389,10 @@ DataModel::DBErrors DataModel::loadWepData(){
 DataModel::DBErrors DataModel::updateCharData(const string &name, const vector<int> &materials){
     QSqlQuery query;
     if(!query.prepare("update character_mats "
-                  "set purples=:purples, "
-                  "blues=:blues, "
-                  "greens=:greens "
-                  "where name=:name")){
+                       "set purples=:purples, "
+                       "blues=:blues, "
+                       "greens=:greens "
+                       "where name=:name")){
         qDebug()<<"Prep failed: "<<query.lastError();
         return DBErrors::DB_WRITE_FAIL;
     }
