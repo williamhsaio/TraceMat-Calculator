@@ -90,6 +90,7 @@ void CharacterPage::handleAddCharClicked(){
         else{
             c->setMaterials(total[0], total[1], total[2]);
         }
+        model->saveCharData(name, path, rarity, c->getMaterials());
         cout<<"total purples: " <<total[0]<<endl;
     }
 }

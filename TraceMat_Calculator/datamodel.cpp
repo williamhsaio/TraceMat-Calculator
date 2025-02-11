@@ -118,7 +118,6 @@ DataModel::Errors DataModel::addCharacter(const string &name, const string &path
             Character *c = new Character(name, rarity, path);
             charList.push_back(c);
 
-            saveCharData(name, path, rarity, c->getMaterials());
             return Errors::SUCCESS;
         }
     }
@@ -291,12 +290,14 @@ DataModel::DBErrors DataModel::saveCharData(const string &name, const string &pa
     }
 
     QSqlQuery query2;
+    qDebug()<<"Purples, blues, greens: "<<materials[0]<<materials[1]<<materials[2];
     query2.prepare("insert into character_mats(name, purples, blues, greens) "
                    "values(:name, :purples, :blues, :greens)");
     query2.bindValue(":name", QString::fromStdString(name));
     query2.bindValue(":purples", materials[0]);
     query2.bindValue(":blues", materials[1]);
     query2.bindValue(":greens", materials[2]);
+    qDebug()<<"query2";
 
     if(!query2.exec()){
         qDebug()<<"Mats Query failed to execute: "<<query2.lastError();
