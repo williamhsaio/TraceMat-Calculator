@@ -139,11 +139,11 @@ DataModel::Errors DataModel::updateCharMats(const string &name, int purples, int
     if(it != charList.end()){
         vector<int> mats = (*it)->getMaterials();
         if(mats[2] - greens < 0){
-            blues += greens/3;
+            blues += (greens - mats[2])/3;
             greens = mats[2];
         }
         if(mats[1] - blues < 0){
-            purples += blues/3;
+            purples += (blues - mats[1])/3;
             blues = mats[1];
         }
         if(mats[0] - purples <=0){
