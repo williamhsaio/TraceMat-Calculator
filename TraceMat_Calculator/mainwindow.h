@@ -1,8 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "characterpage.h"
-#include "weaponpage.h"
+#include "UI/characterpage.h"
+#include "UI/weaponpage.h"
 
 #include <QMainWindow>
 #include <QHBoxLayout>
