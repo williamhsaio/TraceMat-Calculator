@@ -2,63 +2,38 @@ cmake_minimum_required(VERSION 3.16)
 
 project(TraceMat_Calculator VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Sql)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
-        mainwindow.ui
-)
-
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(TraceMat_Calculator
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-        Data/character.h Data/character.cpp
-        Data/weapon.h Data/weapon.cpp
-        Data/datamodel.h Data/datamodel.cpp
+        Data/character.cpp
+        Data/character.h
+        Data/weapon.cpp
+        Data/weapon.h
+        Data/datamodel.cpp
+        Data/datamodel.h
         connection.h
-        UI/characterpage.h UI/characterpage.cpp
-        UI/weaponpage.h UI/weaponpage.cpp
+        UI/characterpage.cpp
+        UI/characterpage.h
+        UI/weaponpage.cpp
+        UI/weaponpage.h
 )
 
+qt_add_executable(TraceMat_Calculator
+    ${PROJECT_SOURCES}
+)
 target_include_directories(TraceMat_Calculator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Data ${CMAKE_CURRENT_SOURCE_DIR}/UI)
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET TraceMat_Calculator APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-else()
-    if(ANDROID)
-        add_library(TraceMat_Calculator SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(TraceMat_Calculator
-            ${PROJECT_SOURCES}
-        )
-    endif()
-endif()
 
-target_link_libraries(TraceMat_Calculator PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
+target_link_libraries(TraceMat_Calculator PRIVATE Qt6::Widgets Qt6::Sql)
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
-if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.TraceMat_Calculator)
-endif()
 set_target_properties(TraceMat_Calculator PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
@@ -73,7 +48,3 @@ install(TARGETS TraceMat_Calculator
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(TraceMat_Calculator)
-endif()
