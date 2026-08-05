@@ -24,16 +24,15 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(TraceMat_Calculator
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        character.h character.cpp
-        weapon.h weapon.cpp
-        datamodel.h datamodel.cpp
+        Data/character.h Data/character.cpp
+        Data/weapon.h Data/weapon.cpp
+        Data/datamodel.h Data/datamodel.cpp
         connection.h
-        characterpage.h characterpage.cpp
-        weaponpage.h weaponpage.cpp
+        UI/characterpage.h UI/characterpage.cpp
+        UI/weaponpage.h UI/weaponpage.cpp
+)
 
-
-
-    )
+target_include_directories(TraceMat_Calculator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Data ${CMAKE_CURRENT_SOURCE_DIR}/UI)
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TraceMat_Calculator APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
